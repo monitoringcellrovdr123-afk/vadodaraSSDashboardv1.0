@@ -137,12 +137,18 @@
 
             const fetchData = useCallback(async () => {
                 try {
-                    const response = await fetch(GOOGLE_SHEET_URL);
+                    // Prevent caching by appending a unique timestamp
+                    const cacheBuster = `&t=${Date.now()}`;
+                    const response = await fetch(`${GOOGLE_SHEET_URL}${cacheBuster}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
                     const parsed = parseCSV(await response.text());
                     setData(parsed);
                     setTimer(REFRESH_INTERVAL);
                     setLoading(false);
-                } catch (e) { console.error(e); setLoading(false); }
+                } catch (e) { 
+                    console.error('Fetch error:', e); 
+                    setLoading(false); 
+                }
             }, []);
 
             useEffect(() => {
@@ -404,7 +410,7 @@
                     </main>
 
                     <footer className={`p-12 text-center text-[10px] font-bold uppercase tracking-[0.3em] border-t mt-12 transition-all ${isDark ? 'border-white/5 text-white/20' : 'border-orange-200 text-slate-400'}`}>
-                        Vadodara Region Campaign Dashboard • Sub_Division Normalization Active • Build 3.6.2 (Sticky Headers Optimized)
+                        Vadodara Region Campaign Dashboard • Build 3.6.3 (Cache-Busting Enabled)
                     </footer>
 
                     {/* FLOAT REFRESH BUTTON FOR MOBILE */}
